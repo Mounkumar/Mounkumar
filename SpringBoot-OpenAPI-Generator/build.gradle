@@ -1,5 +1,8 @@
+import groovy.io.FileType
+
 plugins {
-	id 'org.springframework.boot' version '2.4.5'
+	id "org.openapi.generator" version "4.2.3"
+	//id 'org.springframework.boot' version '2.4.5'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 }
@@ -17,6 +20,88 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-test {
-	useJUnitPlatform()
+apply from: 'dependencies.gradle'
+
+//here we are gooing to store oas files
+def swaagerList = []
+def openapiTaskList = []
+
+def dlist = []
+new File("$rootDir/src/main/resources/apiYAML/").eachDir {dlist << it.name}
+dlist.each {
+	println it
+	
+	def subdir = new File("$rootDir/src/main/resources/apiYAML/".toString()+it)
+	subdir.eachFileRecurse(FileType.FILES) { file -> 
+	if (file.getName().endswith(".yaml"))
+	println file.toString()+"MOUN";
+		def apiName = file.getName().replace(".yaml", "");
+		swaggerList << it+"/"+ apiName		
 }
+}
+
+swaggerlist.each {
+
+string[] str;
+str=it.spilt(%);
+
+def modulename = str[0]
+def apiName= str[1];
+
+
+tasks.create("openApiGenerate" +apiName.capitalize(), GenerateTask.class, {
+generatorName="spring"
+inputSpec="$rootDir/src/main/resources/apiYAML/".tostring()+"${modulename}/"+"${apiName}.yam1"
+outputDir="${rootDir}".tostring()
+templateDir="$rootDir/src/main/resources/templates".tostring()
+//rawOptions = ["--import-mappings", "AddressDetails=com.infosys.fdb.common.mode1.AddressDetails"]
+//import
+
+ systemProperties= [
+     mode1Docs     	: "false",
+     models        	: "",
+     apis          	: "",
+     supportingFiles: "false"
+     
+     ]
+     configOptions = [
+     
+ 				useOptionl     				: "true",
+     			swaggerdockrtconfig     	: "false",
+     			performBeanValidation     	: "false",
+     			useBeanValidation     		: "false",
+     			useTags     				: "true",
+     			singleContentTypes     		: "false",
+     			basePackage     			: "com.infosys.fdb."+modulename+"."+apiName+".controller",
+     			configPackage				: "com.infosys.fdb."+modulename+"."+apiName+".controller",
+     			title     					: rootProject.name,
+     			java8     					: "false",
+     			//dateLibrary     			: "java8",
+     			serializableModel     		: "true",
+     			artifactId     				: rootProject.name,
+     			apiPackage     				: "com.infosys.fdb."+modulename+"."+apiName+".controller",
+     			modelPackage     			: "com.infosys.fdb."+modulename+"."+apiName+".model",
+     			invokerPackage     			: "com.infosys.fdb."+modulename+"."+apiName+".controller",
+     			interfaceOnly     			: "false",
+     			delegatePattern 			: "true"
+     			useLombok 					: "true"
+     			
+     		]
+     		
+   	})
+     		
+     		openapiTaskList << "openApiGenerate" + apiName.capitalize()
+     		
+     }
+     
+     openapiTaskList.each {
+     
+     	compileJava.dependsOn(it)
+     	
+     	
+  }
+     
+     
+     
+   
+     			
